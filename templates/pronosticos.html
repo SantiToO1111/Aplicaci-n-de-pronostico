@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Resultado del pronostico</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <div class="container">
+        <h1>
+            Pronostico de ventas
+        </h1>
+        <form action="{{ url_for('pronosticar') }}" method="POST">  
+            <div>
+                <input type="number" name="N" placeholder="Ingrese el valor de N" value="0">
+            </div>
+            <button type="submit">Pronosticar</button>
+        </form>
+
+
+        <p>
+            El resultado de x1 es : {{ res1 }}
+            El resultado de x2 es : {{ res2 }}
+            El valor de la función objetivo es : {{ fo }}
+        </p>
+    </div>
+</body>
