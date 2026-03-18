@@ -12,16 +12,58 @@
         </h1>
         <form action="{{ url_for('pronosticar') }}" method="POST">  
             <div>
-                <input type="number" name="N" placeholder="Ingrese el valor de N" value="0">
+                <label for="p">Selecciona el producto:</label>
+                <select name="p" id="p">
+                    <option value="P1">P1</option>
+                    <option value="P2">P2</option>
+                    <option value="P3">P3</option>
+                    <option value="P4">P4</option>
+                    <option value="P5">P5</option>
+                </select>
+            </div>
+            <div>
+                <input type="number" name="N" placeholder="Ingrese el valor de N">
+            
             </div>
             <button type="submit">Pronosticar</button>
         </form>
 
 
-        <p>
-            El resultado de x1 es : {{ res1 }}
-            El resultado de x2 es : {{ res2 }}
-            El valor de la función objetivo es : {{ fo }}
-        </p>
+        <h2>Resultados del Pronóstico</h2> 
+        <table border="1" style="border-collapse: collapse; width: 50%;" class="tabla">
+            <tr>
+                <th>Métrica</th>
+                <th>Valor</th>
+            </tr>
+            <tr>
+                <td>MAPE</td>
+                <td>{{ MAPE }}%</td>
+            </tr>
+            <tr>
+                <td>MAPE'</td>
+                <td>{{ MAPE_prima }}%</td>
+            </tr>
+            <tr>
+                <td>MsE</td>
+                <td>{{ MsE }}</td>
+            </tr>
+            <tr>
+                <td>MAE'</td>
+                <td>{{ MAE_prima }}</td>
+            </tr>
+            <tr>
+                <td>RMSE</td>
+                <td>{{ RMSE }}</td>
+            </tr>
+            <tr>
+                <td>Pronóstico</td>
+                <td>{{ pronostico }}</td>
+            </tr>
+        </table>
+
+
+
+        <h2>Gráfico de Ventas Históricas y Pronóstico</h2>
+        <img src="{{ url_for('static', filename='grafico.png') }}" alt="Gráfico de Ventas y Pronóstico" style="max-width: 100%; height: auto;">
     </div>
 </body>
