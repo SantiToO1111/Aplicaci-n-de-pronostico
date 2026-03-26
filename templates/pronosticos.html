@@ -10,60 +10,134 @@
         <h1>
             Pronostico de ventas
         </h1>
-        <form action="{{ url_for('pronosticar') }}" method="POST">  
-            <div>
-                <label for="p">Selecciona el producto:</label>
-                <select name="p" id="p">
-                    <option value="P1">P1</option>
-                    <option value="P2">P2</option>
-                    <option value="P3">P3</option>
-                    <option value="P4">P4</option>
-                    <option value="P5">P5</option>
-                </select>
+        <form action="{{ url_for('pronosticar') }}" method="POST">
+            <div class="panel-selectores">
+                <header class="paneles">
+                    <div class="tarjeta">
+                        <label for="p">Selecciona el producto:</label>
+                        <select name="p" id="p">
+                            <option value="P1">Producto 1</option>
+                            <option value="P2">Producto 2</option>
+                            <option value="P3">Producto 3</option>
+                            <option value="P4">Producto 4</option>
+                            <option value="P5">Producto 5</option>
+                        </select>
+                    </div>
+                    <div class="tarjeta">
+                        <label for="metodo">Método de pronóstico:</label>
+                        <select name="metodo" id="metodo" onchange="toggleInputs()">
+                            <option value="promedio_movil">Promedio móvil</option>
+                            <option value="suav_exponencial">Suavización exponencial simple</option>
+                            <option value="prophet">Prophet</option>
+                        </select>
+                    </div>
+                    <div id="n-input" class="tarjeta" style="display:none;">
+                        <label for="N">Valor de N:</label>
+                        <input type="number" name="N" placeholder="Ingrese el valor de N" id="Ninput" value="5">
+                    </div>
+
+                    <div id="h-input" class="tarjeta">
+                        <label for="h"> periodos de proyección:</label>
+                        <input type="number" name="h" min="1" value="10" placeholder="Horizonte de proyección (ej. 10)" id="hInput">
+                    </div>
+                    <div class="tarjeta">
+                    <button type="submit">Pronosticar</button>
+                    </div>
+                </header>
             </div>
-            <div>
-                <input type="number" name="N" placeholder="Ingrese el valor de N">
-            
-            </div>
-            <button type="submit">Pronosticar</button>
         </form>
 
 
-        <h2>Resultados del Pronóstico</h2> 
-        <table border="1" style="border-collapse: collapse; width: 50%;" class="tabla">
+        <script>
+            function toggleInputs() {
+                var metodo = document.getElementById('metodo').value;
+                var nInput = document.getElementById('Ninput');
+                var hInput = document.getElementById('hInput');
+
+                document.getElementById('n-input').style.display = metodo === 'promedio_movil' ? 'block' : 'none';
+                document.getElementById('h-input').style.display = (metodo === 'suav_exponencial' || metodo === 'prophet') ? 'block' : 'none';
+
+                nInput.required = metodo === 'promedio_movil';
+                hInput.required = metodo === 'suav_exponencial' || metodo === 'prophet';
+            }
+            window.onload = toggleInputs;
+        </script>
+
+
+        <h2>Comparación de Métodos de Pronóstico</h2>
+        <table border="1" style="border-collapse: collapse; width: 80%;" class="tabla">
             <tr>
                 <th>Métrica</th>
-                <th>Valor</th>
+                <th>Promedio Móvil</th>
+                <th>Suavización Exponencial Simple</th>
+                <th>Prophet</th>
             </tr>
             <tr>
                 <td>MAPE</td>
-                <td>{{ MAPE }}%</td>
+                <td>{{ MAPE_pm }}%</td>
+                <td>{{ MAPE_se }}%</td>
+                <td>{{ MAPE_prophet }}%</td>
             </tr>
             <tr>
                 <td>MAPE'</td>
-                <td>{{ MAPE_prima }}%</td>
+                <td>{{ MAPE_prima_pm }}%</td>
+                <td>{{ MAPE_prima_se }}%</td>
+                <td>{{ MAPE_prima_prophet }}%</td>
             </tr>
             <tr>
                 <td>MsE</td>
-                <td>{{ MsE }}</td>
+                <td>{{ MsE_pm }}</td>
+                <td>{{ MsE_se }}</td>
+                <td>{{ MsE_prophet }}</td>
             </tr>
             <tr>
-                <td>MAE'</td>
-                <td>{{ MAE_prima }}</td>
+                <td>MAE</td>
+                <td>{{ MAE_pm }}</td>
+                <td>{{ MAE_se }}</td>
+                <td>{{ MAE_prophet }}</td>
             </tr>
             <tr>
                 <td>RMSE</td>
-                <td>{{ RMSE }}</td>
+                <td>{{ RMSE_pm }}</td>
+                <td>{{ RMSE_se }}</td>
+                <td>{{ RMSE_prophet }}</td>
+            </tr>
+            <tr>
+                <td>Horizonte (h)</td>
+                <td>-</td>
+                <td>{{ h }}</td>
+                <td>{{ h }}</td>
             </tr>
             <tr>
                 <td>Pronóstico</td>
-                <td>{{ pronostico }}</td>
+                <td>{{ pronostico_pm }}</td>
+                <td>{{ pronostico_se }}</td>
+                <td>{{ pronostico_prophet }}</td>
             </tr>
         </table>
 
 
-
+    <div class="contenedor-grafico">
         <h2>Gráfico de Ventas Históricas y Pronóstico</h2>
         <img src="{{ url_for('static', filename='grafico.png') }}" alt="Gráfico de Ventas y Pronóstico" style="max-width: 100%; height: auto;">
+
+    </div>
+        <h2>Detalle de ventas históricas y pronósticos</h2>
+        
+        <table border="1" style="border-collapse: collapse; width: 80%; margin-bottom: 20px;" class="tabla">
+            <tr>
+                <th>Fecha</th>
+                <th>Ventas históricas</th>
+                <th>Pronóstico</th>
+            </tr>
+            {% for fila in display_rows|default([]) %}
+            <tr>
+                <td>{{ fila.fecha.strftime('%Y-%m-%d') if fila.fecha is not none else '' }}</td>
+                <td>{{ fila.historico }}</td>
+                <td>{{ fila.pronostico }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+
     </div>
 </body>
